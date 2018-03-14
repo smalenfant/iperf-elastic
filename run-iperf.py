@@ -3,6 +3,7 @@ import os
 import subprocess
 import shlex
 import json
+import time
 from datetime import datetime
 from elasticsearch import Elasticsearch
 
@@ -47,15 +48,32 @@ command.extend(shlex.split(params))
 def run_iperf (command):
   print command
   #args = shlex.split(command)
-  proc = subprocess.Popen(command,stdout=subprocess.PIPE)
-  (out, err) = proc.communicate()
+  retry = 1
+  while retry:
+    proc = subprocess.Popen(command,stdout=subprocess.PIPE)
+    (out, err) = proc.communicate()
+    doc = json.loads(out)
+    if 'error' in doc:
+      retry = 1
+      print doc['error']
+      time.sleep(10)
+    else:
+      retry = 0
 
-  doc = json.loads(out)
   doc['hostname'] = os.environ['HOSTNAME']
   doc['location'] = os.getenv('location', 'unknown')
-  #doc['params'] = command
 
-  es.index(index=index, doc_type="doc", body=doc)
+  # Flatten end.streams.udp.out_of_order
+  end_streams = doc['end'].pop('streams')
+  
+  doc['end']['sum']['out_of_order'] = end_streams[0]['udp']['out_of_order']
+ 
+  # Remove intervals and starts.connected
+  doc.pop('intervals')
+  doc['start'].pop('connected')
+  
+  results = es.index(index=index, doc_type="doc", body=doc)
+  print results
 
 # Run once (downstream)
 run_iperf(command)
