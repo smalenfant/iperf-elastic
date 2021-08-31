@@ -6,13 +6,13 @@ RUN apk --update add \
     iperf3 \
     jq \
     curl \
-    python \
-    py-pip \
+    python3 \
+    py3-pip \
     ca-certificates \
     && rm -rf /var/cache/apk/* \
     && adduser -S iperf
 
-RUN pip install elasticsearch
+RUN pip3 install elasticsearch
 
 USER iperf
 
