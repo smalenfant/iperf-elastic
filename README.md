@@ -10,6 +10,8 @@ This is intended to connect to a remote iperf server to test latency/jitter/drop
 - params: Set parameters for iperf 
 - location: (optional) Location where the test originate from
 - elastic_url: Elasticsearch URL to post data (default to http://elasticsearch:9200)
+- elastic_user: optional username to connect to elasticsearch
+- elastic_pass: optional password to connect to elasticsearch
 - HOSTNAME: Can be used to override the docker generate hostname
 
 # Examples:
