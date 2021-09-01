@@ -10,7 +10,7 @@ from elasticsearch import Elasticsearch
 elastic_url    = os.getenv('elastic_url', 'http://elasticsearch:9200')
 iperf_host     = os.getenv('iperf_host', '127.0.0.1')
 iperf_port     = os.getenv('iperf_port', '5201')
-params         = os.getenv('params', '--bandwidth 1m')
+params         = os.getenv('params', '')
 elastic_user   = os.getenv('elastic_user', '')
 elastic_pass   = os.getenv('elastic_pass', '')
 
@@ -72,11 +72,14 @@ def run_iperf (command):
   doc['location'] = os.getenv('location', 'unknown')
   doc['@timestamp'] = datetime.now()
 
-  # Flatten end.streams.udp.out_of_order
   end_streams = doc['end'].pop('streams')
-  
-  doc['end']['sum']['out_of_order'] = end_streams[0]['udp']['out_of_order']
- 
+  if doc['start']['test_start']['protocol'] == 'UDP':
+    # Flatten end.streams.udp.out_of_order
+    doc['end']['sum']['out_of_order'] = end_streams[0]['udp']['out_of_order']
+  # Don't care about streams for TCP
+  # Receive rate: end.sum_received.bits_per_second
+  # Send rate: end.sum_sent.bits_per_second
+
   # Remove intervals and starts.connected
   doc.pop('intervals')
   doc['start'].pop('connected')
@@ -84,9 +87,10 @@ def run_iperf (command):
   results = es.index(index=index, body=doc)
   print(results)
 
-# Run once (downstream)
+# Run once
 run_iperf(command)
 
-# Run again (upstream)
-command.append('--reverse')
-run_iperf(command)
+if doc['start']['test_start']['protocol'] == 'UDP':
+  # Run again (upstream) - required for UDP?
+  command.append('--reverse')
+  run_iperf(command)
