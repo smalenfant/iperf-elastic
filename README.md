@@ -17,6 +17,6 @@ This is intended to connect to a remote iperf server to test latency/jitter/drop
 # Examples:
 ## UDP
 `docker run -it --rm -e host=127.0.0.1 -e params="--bandwidth 100k --udp --length 60" -e elastic_url=http://127.0.0.1:9200 iperf:latest`
-## TCP example, seems more appropriate for 
+## TCP example, seems more appropriate for bandwidth monitoring
 `docker run -it --rm -e HOSTNAME=server1 -e elastic_user=elastic -e elastic_pass=blabla -e iperf_host=10.10.10.10 -e host=127.0.0.1 -e elastic_url=http://127.0.0.1:9200 iperf:latest`
 
