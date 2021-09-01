@@ -74,6 +74,7 @@ def run_iperf (command):
 
   end_streams = doc['end'].pop('streams')
   if doc['start']['test_start']['protocol'] == 'UDP':
+    udp = True
     # Flatten end.streams.udp.out_of_order
     doc['end']['sum']['out_of_order'] = end_streams[0]['udp']['out_of_order']
   # Don't care about streams for TCP
@@ -87,10 +88,11 @@ def run_iperf (command):
   results = es.index(index=index, body=doc)
   print(results)
 
+udp = False
 # Run once
 run_iperf(command)
 
-if doc['start']['test_start']['protocol'] == 'UDP':
+if udp:
   # Run again (upstream) - required for UDP?
   command.append('--reverse')
   run_iperf(command)
